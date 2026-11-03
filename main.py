@@ -2,15 +2,10 @@ import requests
 
 ollama_url = "http://localhost:11434/api/chat"
 
-def get_ai_response(prompt):
+def get_ai_response(history):
     payload = {
         "model": "qwen3.5:4b",
-        "messages": [
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
+        "messages": history,
         "stream": False,
         "think": False,
         "keep_alive": "10m",
@@ -42,54 +37,57 @@ def get_ai_response(prompt):
         print(f"API error: {e}")
         return None
 
-def main():
-    while True:
-        print("\n===== AI TEXT ASSISTANT =====")
-        print("1. Summarize Text")
-        print("2. Explain the concept in simple words.")
-        print("3. Answer the user's question.")
-        print("4. Exit")
-        
-        option = input("Choose an option(1-4): ").strip()
 
-        if option == '4' or option.lower() == 'exit':
+    
+
+
+def main():
+
+    chat_history = []
+
+    print("\n=================================")
+    print("       AI TEXT ASSISTANT")
+    print("=================================")
+    print("Chatbot initialized! Ask me anything.")
+    print("Type 'exit' to quit.")
+    print("Type 'clear' to clear conversation history.")
+
+    while True:
+
+        user_input = input("\nYou: ").strip()
+
+        if not user_input:
+            print("Please enter a question.")
+            continue
+
+        if user_input.lower() == "exit":
             print("Goodbye!")
             break
 
-        if option == '1':
-            user_input = input("Enter the text you want to summarize: ")
-            if not user_input.strip():
-                print("Please enter some text.")
-                continue
-            prompt = f"Summarize the following text clearly and concisely:\n{user_input}"
-            
-        elif option == '2':
-            user_input = input("Enter the concept you want explained: ")
-            if not user_input.strip():
-                print("Please enter some text.")
-                continue
-            prompt = f"Explain the following concept in simple words. Include one easy example:\n{user_input}"
-            
-        elif option == '3':
-            user_input = input("Ask your question: ")
-            if not user_input.strip():
-                print("Please enter some text.")
-                continue
-            prompt = user_input
-            
-        else:
-            print("Please give a valid input (1, 2, 3, or 4).")
+        if user_input.lower() == "clear":
+            chat_history.clear()
+            print("Conversation history cleared!")
             continue
 
-        # Get response from the API function
-        answer = get_ai_response(prompt)
+        chat_history.append({
+            "role": "user",
+            "content": user_input
+        })
 
-        # Print layout handled here in main
+        answer = get_ai_response(chat_history)
+
         if answer:
+            chat_history.append({
+                "role": "assistant",
+                "content": answer
+            })
+
             print("\nAI:", answer)
-            print("-" * 20)
+
         else:
+            chat_history.pop()
             print("AI could not generate a response. Please try again.")
+
 
 if __name__ == "__main__":
     main()
